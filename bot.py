@@ -24,21 +24,20 @@ async def auto_translate(message):
     text = message.content
 
     try:
-        # Detect language
+        # Detectar idioma
         detected = translator.detect(text).lang
 
-        # Translate to PT / EN / RU
+        # Traduções para PT / EN / RU
         translations = {
             "pt": translator.translate(text, dest="pt").text,
             "en": translator.translate(text, dest="en").text,
             "ru": translator.translate(text, dest="ru").text
         }
 
+        # Mensagem formatada
         response = (
-            f"🇧🇷 **PT:** {translations['pt']}
-"
-            f"🇺🇸 **EN:** {translations['en']}
-"
+            f"🇧🇷 **PT:** {translations['pt']}\n"
+            f"🇺🇸 **EN:** {translations['en']}\n"
             f"🇷🇺 **RU:** {translations['ru']}"
         )
 
