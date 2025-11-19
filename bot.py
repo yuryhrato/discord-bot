@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 import os
 from dotenv import load_dotenv
 
@@ -8,9 +8,8 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
-intents.messages = True
+intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-translator = Translator()
 
 @bot.event
 async def on_ready():
@@ -24,24 +23,19 @@ async def auto_translate(message):
     text = message.content
 
     try:
-        # Detectar idioma
-        detected = translator.detect(text).lang
-
-        # Traduções para PT / EN / RU
-        translations = {
-            "pt": translator.translate(text, dest="pt").text,
-            "en": translator.translate(text, dest="en").text,
-            "ru": translator.translate(text, dest="ru").text
+        traducoes = {
+            "pt": GoogleTranslator(source="auto", target="pt").translate(text),
+            "en": GoogleTranslator(source="auto", target="en").translate(text),
+            "ru": GoogleTranslator(source="auto", target="ru").translate(text),
         }
 
-        # Mensagem formatada
-        response = (
-            f"🇧🇷 **PT:** {translations['pt']}\n"
-            f"🇺🇸 **EN:** {translations['en']}\n"
-            f"🇷🇺 **RU:** {translations['ru']}"
+        resposta = (
+            f"🇧🇷 **PT:** {traducoes['pt']}\n"
+            f"🇺🇸 **EN:** {traducoes['en']}\n"
+            f"🇷🇺 **RU:** {traducoes['ru']}"
         )
 
-        await message.channel.send(response)
+        await message.channel.send(resposta)
 
     except Exception as e:
         print("Erro:", e)
