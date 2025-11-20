@@ -4,49 +4,60 @@ from deep_translator import GoogleTranslator
 import os
 from dotenv import load_dotenv
 
+# Carregar .env
 load_dotenv()
+
 TOKEN = os.getenv("TOKEN")
 
-CANAL_TRADUCAO = 1440515390072557618  # coloque aqui o ID do canal que deve traduzir
+if TOKEN is None or TOKEN == "":
+    raise ValueError("❌ ERRO: TOKEN não foi encontrado no .env")
 
+
+# ID do canal onde o bot vai traduzir automaticamente
+CANAL_TRADUCAO = 1440515390072557618  # substitua se precisar
+
+# Intents
 intents = discord.Intents.default()
 intents.message_content = True
+
+# Bot
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
 @bot.event
 async def on_ready():
-    print(f"Bot conectado como {bot.user}")
+    print(f"✅ Bot conectado como {bot.user}")
 
 
-@bot.listen("on_message")
-async def auto_translate(message):
+@bot.event
+async def on_message(message):
+    # Ignorar mensagens do próprio bot
     if message.author.bot:
         return
 
-    # se estiver fora do canal escolhido, ignora
-    if message.channel.id != CANAL_TRADUCAO:
-        return
+    # Traduz apenas no canal configurado
+    if message.channel.id == CANAL_TRADUCAO:
+        texto = message.content
 
-    texto = message.content
+        try:
+            traducao_pt = GoogleTranslator(source="auto", target="pt").translate(texto)
+            traducao_en = GoogleTranslator(source="auto", target="en").translate(texto)
+            traducao_ru = GoogleTranslator(source="auto", target="ru").translate(texto)
 
-    try:
-        traducoes = {
-            "pt": GoogleTranslator(source="auto", target="pt").translate(texto),
-            "en": GoogleTranslator(source="auto", target="en").translate(texto),
-            "ru": GoogleTranslator(source="auto", target="ru").translate(texto)
-        }
+            resposta = (
+                f"🇧🇷 **PT:** {traducao_pt}\n"
+                f"🇺🇸 **EN:** {traducao_en}\n"
+                f"🇷🇺 **RU:** {traducao_ru}"
+            )
 
-        resposta = (
-            f"🇧🇷 **PT:** {traducoes['pt']}\n"
-            f"🇺🇸 **EN:** {traducoes['en']}\n"
-            f"🇷🇺 **RU:** {traducoes['ru']}"
-        )
+            await message.channel.send(resposta)
 
-        await message.channel.send(resposta)
+        except Exception as e:
+            print("Erro na tradução:", e)
 
-    except Exception as e:
-        print("Erro:", e)
+    # Necessário para comandos funcionarem
+    await bot.process_commands(message)
 
 
+# Iniciar o bot
 bot.run(TOKEN)
